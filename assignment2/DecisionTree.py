@@ -10,7 +10,7 @@ import math
 # fetch data from CSV files
 def precesssing(path):
     #data_sets2/training_set.csv
-    raw_data= pd.read_csv(path)
+    raw_data = pd.read_csv(path)
     return raw_data
 
 #compute the entropy
@@ -61,67 +61,114 @@ class TreeNode:
 
 #define Desicion Tree
 class DesicionTree:
-    def __int__(self, dataset):
+
+    def __init__(self):
         self.root = None
-        #self.dataset=dataset
 
-    def train(dataset):
+    def createTree(self,dataset):
 
-        return;
+        self.root = self.build(self.root, dataset)
 
-    def build(self,dataset):
+    def build(self, root, dataset):
 
         # if dataset has been used out
         if dataset.empty:
             return None
 
-        self.root = TreeNode(dataset)
+        if root == None:
+            root = TreeNode(dataset)
 
         list, best_attr = self.split(dataset)
 
+        # if attributes had been used out
+        if best_attr == None:
+            # get the majority element in the Class column
+            root.label = list[0].mode().iloc[0]['Class']
+            return root
+
         # if the class is pure
-        if len(list) < 2:
-            self.root.label =
-            return self.root
+        try:
+            if len(list) < 2:
+                root.label = list[0].iloc[0]['Class']
+                return root
+        except:
+            print('list error')
 
-        # if the class is not pure
-        self.root.attribute = best_attr
-        self.root.dataset = dataset
-        self.root.left = self.build(list[0])
-        self.root.right = self.build(list[1])
+        # if the class is not pure and attributes still remain
+        root.attribute = best_attr
+        root.dataset = dataset
+        root.left = self.build(root.left, list[0])
+        root.right = self.build(root.right, list[1])
 
-        return self.root
+        return root
+
+    def print(self):
+        self.preorder(self.root,0)
+
+    def preorder(self, root, depth, attr=None, lf=None):
+
+        if root == None:
+            return
+
+        if attr != None and lf != None:
+            for i in range(depth-1):
+                print('| ', end='')
+            print(attr + ' = ' + str(lf) + ' : ', end='')
+            if root.label != None:
+                print(' ' + str(root.label))
+            else:
+                print('')
+
+        self.preorder(root=root.left, depth=depth+1, attr=root.attribute, lf=0)
+        self.preorder(root=root.right, depth=depth+1, attr=root.attribute, lf=1)
 
 
     # Split the dataset based on the optimal attirbute
     def split(self,dataset):
         max = 0
         best_attr = None
+        list = []  # return the dataset which exclude the optimal attribute
         # print(dataset.columns)
         for item in dataset.columns[0:-1]:
             # print(item)
             IG = infogain(dataset, item)
             # print(info)
-            if (max < IG):
+            if (max <= IG):
                 max = IG
                 best_attr = item
         # print(best_attr)
         # print(max)
-        groups = dataset.groupby(best_attr)
-        list = []
+        # if best_attr == None:
+        #     print(max)
+        #     print(dataset)
+        if best_attr == None:
+            list.append(dataset)
+            return list, best_attr
+        try:
+            groups = dataset.groupby(best_attr)
+        except:
+            print('Best_attr None')
+            print(best_attr)
+            print(dataset)
+
         for key in groups.groups.keys():
             group = groups.get_group(key)
+            group = group.drop(best_attr, 1)
             list.append(group)
         return list, best_attr
 
-
-
 if __name__ == '__main__':
-    training_set=input('Please input the path of trainning data set: ')
+    #training_set=input('Please input the path of trainning data set: ')
+    training_set='data_sets2/training_set.csv'
     #test_set=input('Please input the path of test data set: ')
     #validation_set = input('Please input the path of validation data set: ')
     training_set=precesssing(training_set)
-    split(training_set)
+    dt = DesicionTree()
+    print(dt.root)
+    dt.createTree(training_set)
+    dt.print()
+
+    print("Done")
 
 
 
