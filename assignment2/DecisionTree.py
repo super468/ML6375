@@ -63,17 +63,35 @@ class TreeNode:
 class DesicionTree:
     def __int__(self, dataset):
         self.root = None
-        self.dataset=dataset
+        #self.dataset=dataset
 
     def train(dataset):
 
         return;
 
     def build(self,dataset):
-        self.root=TreeNode(dataset)
 
-        list,best_attr=self.split(dataset)
-        root.left=
+        # if dataset has been used out
+        if dataset.empty:
+            return None
+
+        self.root = TreeNode(dataset)
+
+        list, best_attr = self.split(dataset)
+
+        # if the class is pure
+        if len(list) < 2:
+            self.root.label =
+            return self.root
+
+        # if the class is not pure
+        self.root.attribute = best_attr
+        self.root.dataset = dataset
+        self.root.left = self.build(list[0])
+        self.root.right = self.build(list[1])
+
+        return self.root
+
 
     # Split the dataset based on the optimal attirbute
     def split(self,dataset):
@@ -94,7 +112,7 @@ class DesicionTree:
         for key in groups.groups.keys():
             group = groups.get_group(key)
             list.append(group)
-        return list,best_attr
+        return list, best_attr
 
 
 
