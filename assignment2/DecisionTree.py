@@ -35,21 +35,6 @@ def infogain(dataset,attribute):
         IG=IG-count/total*entropy(group)
     return IG
 
-# def split(tree,attribute):
-#     return
-#
-
-#build the Desicion Tree
-def buildtree(dataset):
-
-    return
-#
-# def prune():
-#     return
-#
-# def print():
-#     return
-
 #define Desicion Tree's Node
 class TreeNode:
     def __init__(self,dataset):
@@ -64,6 +49,8 @@ class DesicionTree:
 
     def __init__(self):
         self.root = None
+        self.nodes = 0  # the number of all nodes
+        self.leaf = 0  # the leafnodes of the tree
 
     def createTree(self,dataset):
 
@@ -102,7 +89,7 @@ class DesicionTree:
 
         return root
 
-    def print(self):
+    def printtree(self):
         self.preorder(self.root,0)
 
     def predict(self,test):
@@ -122,8 +109,8 @@ class DesicionTree:
         elif root.label != None:
             return root.label
 
-
-
+    def prune(self, factor):
+        return
 
     def preorder(self, root, depth, attr=None, lf=None):
 
@@ -141,7 +128,6 @@ class DesicionTree:
 
         self.preorder(root=root.left, depth=depth+1, attr=root.attribute, lf=0)
         self.preorder(root=root.right, depth=depth+1, attr=root.attribute, lf=1)
-
 
     # Split the dataset based on the optimal attirbute
     def split(self,dataset):
@@ -177,11 +163,43 @@ class DesicionTree:
             list.append(group)
         return list, best_attr
 
+    def countnodes(self):
+        self.nodes = 0
+        self.preorder_nodes(self.root)
+
+    def preorder_nodes(self, root):
+        if root == None:
+            return 
+        else:
+            self.nodes = self.nodes+1
+        self.preorder_nodes(root.left)
+        self.preorder_nodes(root.right)
+
+    def countleaf(self):
+        self.leaf = 0
+        self.preorder_leaf(self.root)
+
+    def preorder_leaf(self,root):
+        if root == None:
+            return
+        elif root.label != None:
+            self.leaf = self.leaf + 1
+        self.preorder_leaf(root.left)
+        self.preorder_leaf(root.right)
+
+    def accuracy(self,dataset):
+        X, y = datasplit(dataset)
+        y_pred = self.predict(X)
+        y_true = y.values.tolist()
+        return accuracy(y_pred, y_true)
+
+
 def datasplit(dataset):
     columns = [i for i in list(dataset.columns) if i != 'Class']
     X = dataset[columns]
     y = dataset['Class']
     return X, y
+
 
 def accuracy(y_pred,y_true):
     if len(y_pred) != len(y_true):
@@ -192,28 +210,65 @@ def accuracy(y_pred,y_true):
             count = count+1
     return count/len(y_pred)
 
-def print_prepruned(dt,training_set,validate_set,test_set):
+
+def print_prepruned(dt,training_set,validation_set,test_set):
     print('Pre-Pruned Accuracy')
     print('-----------------------------------')
     print('Number of training instances=%d' % (training_set.shape[0]))
     print('Number of training attributes=%d' % (training_set.shape[1]))
+    dt.countnodes()
+    print('Total number	of nodes in	the	tree=%d' % (dt.nodes))
+    dt.countleaf()
+    print('Number of leaf nodes	in the tree=%d' % (dt.leaf))
+    print('Accuracy of the model on	the	training dataset=%f' % (dt.accuracy(training_set)))
     print('')
+    print('Number of validation	instances=%d' % (validation_set.shape[0]))
+    print('Number of validation	attributes=%d' % (training_set.shape[1]))
+    print('Accuracy	of the model on	the	validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
+    print('')
+    print('Number of testing instances=%d' % (test_set.shape[0]))
+    print('Number of testing attributes=%d' % (test_set.shape[1]))
+    print('Accuracy	of the model on	the	testing	dataset=%f' % (dt.accuracy(test_set)))
+
+
+def print_postpruned(dt,training_set,validation_set,test_set):
+    print('Post-Pruned Accuracy')
+    print('-----------------------------------')
+    print('Number of training instances=%d' % (training_set.shape[0]))
+    print('Number of training attributes=%d' % (training_set.shape[1]))
+    dt.countnodes()
+    print('Total number	of nodes in	the	tree=%d' % (dt.nodes))
+    dt.countleaf()
+    print('Number of leaf nodes	in the tree=%d' % (dt.leaf))
+    print('Accuracy of the model on	the	training dataset=%f' % (dt.accuracy(training_set)))
+    print('')
+    print('Number of validation	instances=%d' % (validation_set.shape[0]))
+    print('Number of validation	attributes=%d' % (training_set.shape[1]))
+    print('Accuracy	of the model on	the	validation dataset after pruning=%f' % (dt.accuracy(validation_set)))
+    print('')
+    print('Number of testing instances=%d' % (test_set.shape[0]))
+    print('Number of testing attributes=%d' % (test_set.shape[1]))
+    print('Accuracy	of the model on	the	testing	dataset=%f' % (dt.accuracy(test_set)))
+
 
 if __name__ == '__main__':
     #training_set=input('Please input the path of trainning data set: ')
-    training_set = 'data_sets2/training_set.csv'
-    validation_set = 'data_sets2/validation_set.csv'
     #test_set=input('Please input the path of test data set: ')
     #validation_set = input('Please input the path of validation data set: ')
-    training_set=precesssing(training_set)
-    validation_set=precesssing(validation_set)
+    training_set = 'data_sets2/training_set.csv'
+    validation_set = 'data_sets2/validation_set.csv'
+    test_set = 'data_sets2/test_set.csv'
+    training_set = precesssing(training_set)
+    validation_set = precesssing(validation_set)
+    test_set = precesssing(test_set)
+
     dt = DesicionTree()
     dt.createTree(training_set)
-    dt.print()
-    X, y = datasplit(validation_set)
-    y_pred = dt.predict(X)
-    y_true = y.values.tolist()
-    print(accuracy(y_pred, y_true))
+    print_prepruned(dt, training_set, validation_set, test_set)
+    #X, y = datasplit(validation_set)
+    #y_pred = dt.predict(X)
+    #y_true = y.values.tolist()
+    #print(accuracy(y_pred, y_true))
 
 
 
