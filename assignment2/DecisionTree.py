@@ -105,6 +105,26 @@ class DesicionTree:
     def print(self):
         self.preorder(self.root,0)
 
+    def predict(self,test):
+        list = []
+        for index, row in test.iterrows():
+            ans = self.traverse(self.root, row)
+            list.append(ans)
+        return list
+
+    def traverse(self, root, row):
+        if root.attribute != None:
+            if row[root.attribute] == 0:
+                return self.traverse(root.left, row)
+            else:
+                return self.traverse(root.right, row)
+
+        elif root.label != None:
+            return root.label
+
+
+
+
     def preorder(self, root, depth, attr=None, lf=None):
 
         if root == None:
@@ -157,18 +177,43 @@ class DesicionTree:
             list.append(group)
         return list, best_attr
 
+def datasplit(dataset):
+    columns = [i for i in list(dataset.columns) if i != 'Class']
+    X = dataset[columns]
+    y = dataset['Class']
+    return X, y
+
+def accuracy(y_pred,y_true):
+    if len(y_pred) != len(y_true):
+        return None
+    count = 0
+    for i in range(len(y_pred)):
+        if y_pred[i] == y_true[i]:
+            count = count+1
+    return count/len(y_pred)
+
+def print_prepruned(dt,training_set,validate_set,test_set):
+    print('Pre-Pruned Accuracy')
+    print('-----------------------------------')
+    print('Number of training instances=%d' % (training_set.shape[0]))
+    print('Number of training attributes=%d' % (training_set.shape[1]))
+    print('')
+
 if __name__ == '__main__':
     #training_set=input('Please input the path of trainning data set: ')
-    training_set='data_sets2/training_set.csv'
+    training_set = 'data_sets2/training_set.csv'
+    validation_set = 'data_sets2/validation_set.csv'
     #test_set=input('Please input the path of test data set: ')
     #validation_set = input('Please input the path of validation data set: ')
     training_set=precesssing(training_set)
+    validation_set=precesssing(validation_set)
     dt = DesicionTree()
-    print(dt.root)
     dt.createTree(training_set)
     dt.print()
-
-    print("Done")
+    X, y = datasplit(validation_set)
+    y_pred = dt.predict(X)
+    y_true = y.values.tolist()
+    print(accuracy(y_pred, y_true))
 
 
 
