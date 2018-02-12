@@ -126,7 +126,7 @@ class DesicionTree:
         toprunenodes = int(internodes*factor)
         best_accuracy = self.accuracy(validation_set)
         current_accuracy = 0.
-        max_times = 30
+        max_times = 50
         iterate_times = 0
         while best_accuracy > current_accuracy:
             iterate_times += 1
@@ -138,7 +138,7 @@ class DesicionTree:
                 except:
                     print(newtree.inter)
 
-                newtree.countnodes()
+                #newtree.countnodes()
                 newtree.count = 0
                 newtree.once = False
                 newtree.preorder_prune(newtree.root, p)
@@ -149,15 +149,14 @@ class DesicionTree:
                 print('-------------------Prune Summary-------------------')
                 print('after %dth prune, the accuracy goes up!' % (iterate_times))
                 print('---------------------------------------------------')
-                newtree.countnodes()
+                #newtree.countnodes()
                 # print('the newtree was pruned %d nodes and now has %d nodes' %)
                 return newtree
             if iterate_times > max_times:
                 print('pruned the tree for 30 times but the accuracy did not go up')
-                return self
+                return newtree
+        return newtree
 
-
-        return
 
     def preorder_prune(self, root, p):
         if root == None:
@@ -332,7 +331,7 @@ if __name__ == '__main__':
     training_set = 'data_sets2/training_set.csv'
     validation_set = 'data_sets2/validation_set.csv'
     test_set = 'data_sets2/test_set.csv'
-    factor = 0.1
+    factor = 0.01
     training_set = precesssing(training_set)
     validation_set = precesssing(validation_set)
     test_set = precesssing(test_set)
