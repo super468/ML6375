@@ -102,7 +102,7 @@ class DesicionTree:
     def printtree(self):
         self.preorder(self.root, 0)
 
-    def predict(self,test):
+    def predict(self, test):
         list = []
         for index, row in test.iterrows():
             ans = self.traverse(self.root, row)
@@ -288,7 +288,7 @@ def print_prepruned(dt,training_set,validation_set,test_set):
     print('Pre-Pruned Accuracy')
     print('-----------------------------------')
     print('Number of training instances=%d' % (training_set.shape[0]))
-    print('Number of training attributes=%d' % (training_set.shape[1]))
+    print('Number of training attributes=%d' % (training_set.shape[1]-1))
     dt.countnodes()
     print('Total number of nodes in the tree=%d' % (dt.nodes))
     dt.countleaf()
@@ -296,11 +296,11 @@ def print_prepruned(dt,training_set,validation_set,test_set):
     print('Accuracy of the model on the training dataset=%f' % (dt.accuracy(training_set)))
     print('')
     print('Number of validation instances=%d' % (validation_set.shape[0]))
-    print('Number of validation attributes=%d' % (training_set.shape[1]))
+    print('Number of validation attributes=%d' % (validation_set.shape[1]-1))
     print('Accuracy of the model on the validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
     print('')
     print('Number of testing instances=%d' % (test_set.shape[0]))
-    print('Number of testing attributes=%d' % (test_set.shape[1]))
+    print('Number of testing attributes=%d' % (test_set.shape[1]-1))
     print('Accuracy of the model on the test dataset=%f' % (dt.accuracy(test_set)))
 
 
@@ -308,7 +308,7 @@ def print_postpruned(dt,training_set,validation_set,test_set):
     print('Post-Pruned Accuracy')
     print('-----------------------------------')
     print('Number of training instances=%d' % (training_set.shape[0]))
-    print('Number of training attributes=%d' % (training_set.shape[1]))
+    print('Number of training attributes=%d' % (training_set.shape[1]-1))
     dt.countnodes()
     print('Total number of nodes in the tree=%d' % (dt.nodes))
     dt.countleaf()
@@ -316,22 +316,22 @@ def print_postpruned(dt,training_set,validation_set,test_set):
     print('Accuracy of the model on the training dataset=%f' % (dt.accuracy(training_set)))
     print('')
     print('Number of validation instances=%d' % (validation_set.shape[0]))
-    print('Number of validation attributes=%d' % (training_set.shape[1]))
+    print('Number of validation attributes=%d' % (validation_set.shape[1]-1))
     print('Accuracy of the model on the validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
     print('')
     print('Number of testing instances=%d' % (test_set.shape[0]))
-    print('Number of testing attributes=%d' % (test_set.shape[1]))
+    print('Number of testing attributes=%d' % (test_set.shape[1]-1))
     print('Accuracy of the model on the test dataset=%f' % (dt.accuracy(test_set)))
 
 if __name__ == '__main__':
-    #training_set=input('Please input the path of trainning data set: ')
-    #test_set=input('Please input the path of test data set: ')
-    #validation_set = input('Please input the path of validation data set: ')
-    #factor = float(input('Please input the prune factor: '))
-    training_set = 'data_sets2/training_set.csv'
-    validation_set = 'data_sets2/validation_set.csv'
-    test_set = 'data_sets2/test_set.csv'
-    factor = 0.01
+    training_set = input('Please input the path of trainning data set: ')
+    test_set = input('Please input the path of test data set: ')
+    validation_set = input('Please input the path of validation data set: ')
+    factor = float(input('Please input the prune factor: '))
+    # training_set = 'data_sets2/training_set.csv'
+    # validation_set = 'data_sets2/validation_set.csv'
+    # test_set = 'data_sets2/test_set.csv'
+    # factor = 0.15
     training_set = precesssing(training_set)
     validation_set = precesssing(validation_set)
     test_set = precesssing(test_set)
