@@ -55,6 +55,7 @@ class DesicionTree:
         self.leaf = 0  # the leafnodes of the tree
         self.inter = 0 # the internal nodes of the tree
         self.count = 0 # the helper count
+        self.once = False
 
     def createTree(self,dataset):
 
@@ -85,7 +86,7 @@ class DesicionTree:
         try:
             if len(list) < 2:
                 root.label = list[0].iloc[0]['Class']
-                root.dataset =dataset
+                root.dataset = dataset
                 return root
         except:
             print('list error')
@@ -99,7 +100,7 @@ class DesicionTree:
         return root
 
     def printtree(self):
-        self.preorder(self.root,0)
+        self.preorder(self.root, 0)
 
     def predict(self,test):
         list = []
@@ -131,15 +132,25 @@ class DesicionTree:
             iterate_times += 1
             newtree = copy.deepcopy(self)
             for i in range(toprunenodes):
-                newtree.countinter()
+                # newtree.countinter()
                 try:
-                    p = random.randint(0, newtree.inter - 1)
+                    p = random.randint(0, self.inter - 1)
                 except:
                     print(newtree.inter)
+
+                newtree.countnodes()
                 newtree.count = 0
+                newtree.once = False
                 newtree.preorder_prune(newtree.root, p)
+                # newtree.countnodes()
+                # print(newtree.nodes)
             current_accuracy = newtree.accuracy(validation_set)
             if current_accuracy > best_accuracy:
+                print('-------------------Prune Summary-------------------')
+                print('after %dth prune, the accuracy goes up!' % (iterate_times))
+                print('---------------------------------------------------')
+                newtree.countnodes()
+                # print('the newtree was pruned %d nodes and now has %d nodes' %)
                 return newtree
             if iterate_times > max_times:
                 print('pruned the tree for 30 times but the accuracy did not go up')
@@ -152,10 +163,13 @@ class DesicionTree:
         if root == None:
             return
         if root.attribute!= None:
-            if self.count == p:
-                root.label = root.dataset.mode().iloc[0]['Class']
+            if self.count == p and self.once == False:
+                root.label = int(root.dataset.mode().iloc[0]['Class'])
                 root.right = None
                 root.left = None
+                root.attribute = None
+                self.once = True
+                return
             else:
                 self.count += 1
                 self.preorder_prune(root.left, p)
@@ -191,14 +205,10 @@ class DesicionTree:
             # print(item)
             IG = infogain(dataset, item)
             # print(info)
-            if (max <= IG):
+            if (max < IG):
                 max = IG
                 best_attr = item
-        # print(best_attr)
-        # print(max)
-        # if best_attr == None:
-        #     print(max)
-        #     print(dataset)
+
         if best_attr == None:
             list.append(dataset)
             return list, best_attr
@@ -281,18 +291,18 @@ def print_prepruned(dt,training_set,validation_set,test_set):
     print('Number of training instances=%d' % (training_set.shape[0]))
     print('Number of training attributes=%d' % (training_set.shape[1]))
     dt.countnodes()
-    print('Total number	of nodes in	the	tree=%d' % (dt.nodes))
+    print('Total number of nodes in the tree=%d' % (dt.nodes))
     dt.countleaf()
-    print('Number of leaf nodes	in the tree=%d' % (dt.leaf))
-    print('Accuracy of the model on	the	training dataset=%f' % (dt.accuracy(training_set)))
+    print('Number of leaf nodes in the tree=%d' % (dt.leaf))
+    print('Accuracy of the model on the training dataset=%f' % (dt.accuracy(training_set)))
     print('')
-    print('Number of validation	instances=%d' % (validation_set.shape[0]))
-    print('Number of validation	attributes=%d' % (training_set.shape[1]))
-    print('Accuracy	of the model on	the	validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
+    print('Number of validation instances=%d' % (validation_set.shape[0]))
+    print('Number of validation attributes=%d' % (training_set.shape[1]))
+    print('Accuracy of the model on the validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
     print('')
     print('Number of testing instances=%d' % (test_set.shape[0]))
     print('Number of testing attributes=%d' % (test_set.shape[1]))
-    print('Accuracy	of the model on	the	testing	dataset=%f' % (dt.accuracy(test_set)))
+    print('Accuracy of the model on the test dataset=%f' % (dt.accuracy(test_set)))
 
 
 def print_postpruned(dt,training_set,validation_set,test_set):
@@ -301,27 +311,28 @@ def print_postpruned(dt,training_set,validation_set,test_set):
     print('Number of training instances=%d' % (training_set.shape[0]))
     print('Number of training attributes=%d' % (training_set.shape[1]))
     dt.countnodes()
-    print('Total number	of nodes in	the	tree=%d' % (dt.nodes))
+    print('Total number of nodes in the tree=%d' % (dt.nodes))
     dt.countleaf()
-    print('Number of leaf nodes	in the tree=%d' % (dt.leaf))
-    print('Accuracy of the model on	the	training dataset=%f' % (dt.accuracy(training_set)))
+    print('Number of leaf nodes in the tree=%d' % (dt.leaf))
+    print('Accuracy of the model on the training dataset=%f' % (dt.accuracy(training_set)))
     print('')
     print('Number of validation instances=%d' % (validation_set.shape[0]))
     print('Number of validation attributes=%d' % (training_set.shape[1]))
-    print('Accuracy of the model on	the	validation dataset after pruning=%f' % (dt.accuracy(validation_set)))
+    print('Accuracy of the model on the validation dataset before pruning=%f' % (dt.accuracy(validation_set)))
     print('')
     print('Number of testing instances=%d' % (test_set.shape[0]))
     print('Number of testing attributes=%d' % (test_set.shape[1]))
-    print('Accuracy of the model on	the	testing	dataset=%f' % (dt.accuracy(test_set)))
-
+    print('Accuracy of the model on the test dataset=%f' % (dt.accuracy(test_set)))
 
 if __name__ == '__main__':
     #training_set=input('Please input the path of trainning data set: ')
     #test_set=input('Please input the path of test data set: ')
     #validation_set = input('Please input the path of validation data set: ')
+    #factor = float(input('Please input the prune factor: '))
     training_set = 'data_sets2/training_set.csv'
     validation_set = 'data_sets2/validation_set.csv'
     test_set = 'data_sets2/test_set.csv'
+    factor = 0.1
     training_set = precesssing(training_set)
     validation_set = precesssing(validation_set)
     test_set = precesssing(test_set)
@@ -329,12 +340,13 @@ if __name__ == '__main__':
     dt = DesicionTree()
     dt.createTree(training_set)
 
+    dt.printtree()
     print_prepruned(dt, training_set, validation_set, test_set)
 
-    dt = dt.prune(0.2, validation_set)
+    dt = dt.prune(factor, validation_set)
 
     print_postpruned(dt, training_set, validation_set, test_set)
-
+    dt.printtree()
 
 
 
