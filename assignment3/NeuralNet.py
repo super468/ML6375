@@ -30,7 +30,7 @@ from sklearn.metrics import accuracy_score
 
 class NeuralNet:
 
-    def __init__(self, train, header = True, h1 = 4, h2 = 2, activation = 'sigmoid'):
+    def __init__(self, train, header = True, h1 = 20, h2 = 10, activation = 'sigmoid'):
         np.random.seed(1)
         # train refers to the training dataset
         # test refers to the testing dataset
@@ -120,6 +120,7 @@ class NeuralNet:
     def __ReLu_derivative(self, x):
         return 1. * (x > 0)
 
+
     #
     # TODO: Write code for pre-processing the dataset, which would include standardization, normalization,
     #   categorical to numerical, etc
@@ -141,7 +142,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, max_iterations = 1000, learning_rate = 0.05):
+    def train(self, max_iterations = 5000, learning_rate = 0.001):
         for iteration in range(max_iterations):
             out = self.forward_pass()
             error = 0.5 * np.power((out - self.y), 2)
@@ -153,6 +154,7 @@ class NeuralNet:
             self.w23 += update_layer2
             self.w12 += update_layer1
             self.w01 += update_input
+            print(str(np.sum(error)))
 
         print("After " + str(max_iterations) + " iterations, the total error is " + str(np.sum(error)))
         print("The final weight vectors are (starting from input to output layers)")
@@ -175,14 +177,14 @@ class NeuralNet:
             in2 = np.dot(self.X12, self.w12)
             self.X23 = self.__tanh(in2)
             in3 = np.dot(self.X23, self.w23)
-            out = self.__tanh(in3)
+            out = self.__sigmoid(in3)
         if self.activation == 'ReLu':
             in1 = np.dot(self.X, self.w01)
             self.X12 = self.__ReLu(in1)
             in2 = np.dot(self.X12, self.w12)
             self.X23 = self.__ReLu(in2)
             in3 = np.dot(self.X23, self.w23)
-            out = self.__ReLu(in3)
+            out = self.__sigmoid(in3)
         return out
 
 
@@ -196,12 +198,12 @@ class NeuralNet:
     # TODO: Implement other activation functions
 
     def compute_output_delta(self, out, activation="sigmoid"):
-        if activation == "sigmoid":
-            delta_output = (self.y - out) * (self.__sigmoid_derivative(out))
-        if activation == "tanh":
-            delta_output = (self.y - out) * (self.__tanh_derivative(out))
-        if activation == "ReLu":
-            delta_output = (self.y - out) * (self.__ReLu_derivative(out))
+        # if activation == "sigmoid":
+        delta_output = (self.y - out) * (self.__sigmoid_derivative(out))
+        # if activation == "tanh":
+        #     delta_output = (self.y - out) * (self.__tanh_derivative(out))
+        # if activation == "ReLu":
+        #     delta_output = (self.y - out) * (self.__ReLu_derivative(out))
 
         self.deltaOut = delta_output
 
@@ -272,10 +274,12 @@ class NeuralNet:
         return accuracy_score(self.y, out)
 
 if __name__ == "__main__":
-    url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data'
+    #url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
+    #url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data'
+    url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
     #url = 'train.csv'
-    neural_network = NeuralNet(url, False, activation='tanh')
-    neural_network.train()
+    neural_network = NeuralNet(url, False, activation='ReLu', h1=50, h2=20)
+    neural_network.train(learning_rate=0.0001, max_iterations=1000)
     testError = neural_network.predict()
     print("accuracy")
     print(testError)
