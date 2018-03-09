@@ -110,15 +110,20 @@ class NeuralNet:
 
     def __tanh(self, x):
         return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+        #return 1 / (1 + np.exp(-x))
 
     def __tanh_derivative(self, x):
         return 1. - x * x
+        #return x * (1. - x)
 
     def __ReLu(self, x):
-        return x * (x > 0)
+        return np.maximum(0, x)
 
     def __ReLu_derivative(self, x):
-        return 1. * (x > 0)
+        x[x <= 0] = 0
+        x[x > 0] = 1
+        return x
+        # return 1. * (x > 0)
 
 
     #
@@ -137,7 +142,6 @@ class NeuralNet:
         # Standardize data
         scaler = StandardScaler()
         X.iloc[:, :-1] = scaler.fit_transform(X.iloc[:, :-1])
-        print(X)
         return X
 
     # Below is the training function
@@ -275,7 +279,7 @@ if __name__ == "__main__":
     print('Welcome to ML6375 Neural Network!')
     flag = True
     while flag:
-        data = int(input('Which data do you want to use?\n[1] iris.data [2] car.data [3] adult.data [4] I want to my own data'))
+        data = int(input('Which data do you want to use?\n[1] iris.data [2] car.data [3] adult.data [4] I want my own data'))
         if data == 1:
             url = url_iris
             flag = False
@@ -300,10 +304,10 @@ if __name__ == "__main__":
         elif data == 3:
             activation = 'ReLu'
             flag = False
-    h1 = int(input('Please input first hidden layer size'))
-    h2 = int(input('Please input second hidden layer size'))
-    learing_rate = float(input('Please input learing_rate'))
-    iteration = int(input('Please input max_iteration'))
+    h1 = int(input('Please input first hidden layer size\n'))
+    h2 = int(input('Please input second hidden layer size\n'))
+    learing_rate = float(input('Please input learing_rate\n'))
+    iteration = int(input('Please input max_iteration\n'))
 
     neural_network = NeuralNet(url, False, activation=activation, h1=h1, h2=h2)
     neural_network.train(learning_rate=learing_rate, max_iterations=iteration)
