@@ -132,8 +132,8 @@ class NeuralNet:
         X[X.select_dtypes(['object']).columns] = X.select_dtypes(['object']).apply(lambda x: x.astype('category'))
         X[X.select_dtypes(['category']).columns] = X.select_dtypes(['category']).apply(lambda x: x.cat.codes)
         # fill the missing value
-        X = X.fillna(X.mean())
-        print(X)
+        X = X.apply(lambda x: x.fillna(x.value_counts().index[0]))
+        #X = X.fillna(X.mean())
         # Standardize data
         scaler = StandardScaler()
         X.iloc[:, :-1] = scaler.fit_transform(X.iloc[:, :-1])
@@ -142,7 +142,7 @@ class NeuralNet:
 
     # Below is the training function
 
-    def train(self, max_iterations = 5000, learning_rate = 0.001):
+    def train(self, max_iterations = 1000, learning_rate = 0.001):
         for iteration in range(max_iterations):
             out = self.forward_pass()
             error = 0.5 * np.power((out - self.y), 2)
@@ -154,13 +154,13 @@ class NeuralNet:
             self.w23 += update_layer2
             self.w12 += update_layer1
             self.w01 += update_input
-            print(str(np.sum(error)))
+            print(str(np.sum(error)/len(self.X)))
 
-        print("After " + str(max_iterations) + " iterations, the total error is " + str(np.sum(error)))
-        print("The final weight vectors are (starting from input to output layers)")
-        print(self.w01)
-        print(self.w12)
-        print(self.w23)
+        print("After " + str(max_iterations) + " iterations, the total error is " + str(np.sum(error/len(self.X))))
+        # print("The final weight vectors are (starting from input to output layers)")
+        # print(self.w01)
+        # print(self.w12)
+        # print(self.w23)
 
     def forward_pass(self):
         # pass our inputs through our neural network
@@ -177,14 +177,14 @@ class NeuralNet:
             in2 = np.dot(self.X12, self.w12)
             self.X23 = self.__tanh(in2)
             in3 = np.dot(self.X23, self.w23)
-            out = self.__sigmoid(in3)
+            out = self.__tanh(in3)
         if self.activation == 'ReLu':
             in1 = np.dot(self.X, self.w01)
             self.X12 = self.__ReLu(in1)
             in2 = np.dot(self.X12, self.w12)
             self.X23 = self.__ReLu(in2)
             in3 = np.dot(self.X23, self.w23)
-            out = self.__sigmoid(in3)
+            out = self.__ReLu(in3)
         return out
 
 
@@ -198,12 +198,12 @@ class NeuralNet:
     # TODO: Implement other activation functions
 
     def compute_output_delta(self, out, activation="sigmoid"):
-        # if activation == "sigmoid":
-        delta_output = (self.y - out) * (self.__sigmoid_derivative(out))
-        # if activation == "tanh":
-        #     delta_output = (self.y - out) * (self.__tanh_derivative(out))
-        # if activation == "ReLu":
-        #     delta_output = (self.y - out) * (self.__ReLu_derivative(out))
+        if activation == "sigmoid":
+            delta_output = (self.y - out) * (self.__sigmoid_derivative(out))
+        if activation == "tanh":
+            delta_output = (self.y - out) * (self.__tanh_derivative(out))
+        if activation == "ReLu":
+            delta_output = (self.y - out) * (self.__ReLu_derivative(out))
 
         self.deltaOut = delta_output
 
@@ -264,22 +264,49 @@ class NeuralNet:
             enc = OneHotEncoder()
             self.y = enc.fit_transform(self.y).toarray()
         out = self.forward_pass()
-        print("real output")
-        print(out)
         out = (out == out.max(axis=1, keepdims=1)).astype(int)
-        print("noramlize")
-        print(out)
-        print("target")
-        print(self.y)
         return accuracy_score(self.y, out)
 
 if __name__ == "__main__":
-    #url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
-    #url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data'
-    url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
+    url_iris = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
+    url_car = 'https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data'
+    url_adult = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
     #url = 'train.csv'
-    neural_network = NeuralNet(url, False, activation='ReLu', h1=50, h2=20)
-    neural_network.train(learning_rate=0.0001, max_iterations=1000)
+    print('Welcome to ML6375 Neural Network!')
+    flag = True
+    while flag:
+        data = int(input('Which data do you want to use?\n[1] iris.data [2] car.data [3] adult.data [4] I want to my own data'))
+        if data == 1:
+            url = url_iris
+            flag = False
+        elif data == 2:
+            url = url_car
+            flag = False
+        elif data == 3:
+            url = url_adult
+            flag = False
+        elif data == 4:
+            url = str(input('Please write or paste the path or url'))
+            flag = False
+    flag = True
+    while flag:
+        data = int(input('Which activation do you want to use?\n[1] sigmoid [2] tanh [3] ReLu'))
+        if data == 1:
+            activation = 'sigmoid'
+            flag = False
+        elif data == 2:
+            activation = 'tanh'
+            flag = False
+        elif data == 3:
+            activation = 'ReLu'
+            flag = False
+    h1 = int(input('Please input first hidden layer size'))
+    h2 = int(input('Please input second hidden layer size'))
+    learing_rate = float(input('Please input learing_rate'))
+    iteration = int(input('Please input max_iteration'))
+
+    neural_network = NeuralNet(url, False, activation=activation, h1=h1, h2=h2)
+    neural_network.train(learning_rate=learing_rate, max_iterations=iteration)
     testError = neural_network.predict()
     print("accuracy")
     print(testError)
